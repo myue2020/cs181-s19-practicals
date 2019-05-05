@@ -16,10 +16,20 @@ class Learner(object):
         self.last_action = None
         self.last_reward = None
 
+        self.eta = 0.05
+        self.gamma = 0.90
+        self.epsilon = 0.05
+        self.qtable = {}
+
     def reset(self):
         self.last_state  = None
         self.last_action = None
         self.last_reward = None
+
+    def q(self, state):
+        if state not in self.qtable:
+            self.qtable[state] = np.zeros(2)
+        return self.qtable[state]
 
     def action_callback(self, state):
         '''
@@ -32,12 +42,17 @@ class Learner(object):
         # You'll need to select and action and return it.
         # Return 0 to swing and 1 to jump.
 
-        new_action = npr.rand() < 0.5
-        new_state  = state
+        new_state = (state["tree"]["dist"] // 120, 
+                     np.mean([state["tree"]["top"] - state["monkey"]["top"], state["tree"]["bot"] - state["monkey"]["bot"]]) // 60)
+
         if not self.last_state:
-            
-        self.last_action = new_action
-        self.last_state  = new_state
+            self.last_action = 0
+            self.last_state  = new_state
+            return self.last_action
+
+        self.qtable[self.last_state][self.last_action] = (1 - self.eta)*self.q(self.last_state)[self.last_action] + self.eta * (self.last_reward + self.gamma*np.max(self.q(new_state)))
+        self.last_action = np.argmax(self.q(self.last_state)) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, .5)
+        self.last_state = new_state
 
         return self.last_action
 
@@ -80,7 +95,7 @@ if __name__ == '__main__':
 	hist = []
 
 	# Run games. 
-	run_games(agent, hist, 20, 10)
+	run_games(agent, hist, 100, 1)
 
 	# Save history. 
 	np.save('hist',np.array(hist))
