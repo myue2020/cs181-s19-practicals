@@ -15,19 +15,19 @@ class Learner(object):
         self.last_action = None
         self.last_reward = None
 
-        self.eta = 0.001
+        self.eta = 0.000001
         self.gamma = 0.8
-        self.epsilon = 0.01
-        self.alpha = 1
-        self.W = npr.uniform(0, 0.5, 19)
+        self.epsilon = 0.05
+        self.alpha = 0
+        self.W = npr.uniform(0, 1, 25)
         self.game_counter = 0
 
     def reset(self):
         self.last_state  = None
         self.last_action = None
         self.last_reward = None
-        self.epsilon *= 0.99
-        if self.game_counter % 5 == 0:
+        self.epsilon *= 0.999
+        if self.game_counter % 25 == 0:
             print(self.W)
         self.game_counter += 1
 
@@ -44,12 +44,15 @@ class Learner(object):
 
         def function(state, action):
             centered = np.mean([state["tree"]["top"] - state["monkey"]["top"], state["tree"]["bot"] - state["monkey"]["bot"]])
-            temp_state = 1/100*np.array([state["monkey"]["vel"],
+            temp_state = 1/100000*np.array([state["monkey"]["vel"],
                                          state["monkey"]["vel"] ** 2,
+                                         state["monkey"]["vel"] ** 3,
                                          state["tree"]["dist"],
                                          state["tree"]["dist"] ** 2, 
+                                         state["tree"]["dist"] ** 3,
                                          centered,
                                          centered ** 2,
+                                         centered ** 3,
                                          state["monkey"]["vel"] * state["tree"]["dist"],
                                          state["tree"]["dist"] * centered,
                                          state["monkey"]["vel"] * centered])
@@ -62,7 +65,7 @@ class Learner(object):
 
         old = np.dot(self.W, function(self.last_state, self.last_action))
         new = np.max([np.dot(self.W, function(state, 0)), np.dot(self.W, function(state, 1))])
-        self.W = (1-self.eta)*self.W + self.eta*(self.last_reward + self.gamma*new) - self.eta*self.alpha*np.linalg.norm(self.W) ** 2
+        self.W = (1-self.eta)*self.W + self.eta*(self.last_reward + self.gamma*new - old)*function(self.last_state, self.last_action) - self.eta*self.alpha*np.linalg.norm(self.W) ** 2
         self.last_action = np.argmax([np.dot(self.W, function(state, 0)), np.dot(self.W, function(state, 1))]) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
         return self.last_action
 
