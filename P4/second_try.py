@@ -63,10 +63,10 @@ class Learner(object):
             self.last_action = 0 if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
             return self.last_action
 
-        old = np.dot(self.W, function(self.last_state, self.last_action))
-        new = np.max([np.dot(self.W, function(state, 0)), np.dot(self.W, function(state, 1))])
-        self.W = (1-self.eta)*self.W + self.eta*(self.last_reward + self.gamma*new - old)*function(self.last_state, self.last_action) - self.eta*self.alpha*np.linalg.norm(self.W) ** 2
-        self.last_action = np.argmax([np.dot(self.W, function(state, 0)), np.dot(self.W, function(state, 1))]) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
+        old = function(self.last_state, self.last_action)
+        new = [np.dot(self.W, function(state, 0)), np.dot(self.W, function(state, 1))]
+        self.W = (1-self.eta)*self.W + self.eta*(self.last_reward + self.gamma*np.max(new) - np.dot(self.W, old))*old - self.eta*self.alpha*np.linalg.norm(self.W) ** 2
+        self.last_action = np.argmax(new) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
         return self.last_action
 
     def reward_callback(self, reward):
