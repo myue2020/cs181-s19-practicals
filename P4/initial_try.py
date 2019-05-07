@@ -81,9 +81,6 @@ class Learner(object):
         '''This gets called so you can see what reward you get.'''
         self.last_reward = reward
 
-
-
-
 def run_games(learner, hist, iters = 100, t_len = 100):
     '''
     Driver function to simulate learning by having the agent play a sequence of games.
