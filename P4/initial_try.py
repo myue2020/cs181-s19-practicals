@@ -52,7 +52,7 @@ class Learner(object):
         #     self.epsilon = 0
 #self.gravity,
         new_state = (
-                     # self.gravity,
+                     self.gravity,
 					 state["monkey"]["vel"] // 10,
                      state["tree"]["dist"] // 120,
                      np.mean([state["tree"]["top"] - state["monkey"]["top"], state["tree"]["bot"] - state["monkey"]["bot"]]) // 60)
@@ -69,11 +69,15 @@ class Learner(object):
 
         # Q next line
         self.qtable[self.last_state][self.last_action] = (1 - self.eta)*q(self.last_state)[self.last_action] + self.eta * (self.last_reward + self.gamma*np.max(q(new_state)))
-        # SARSA next line
-        #self.qtable[self.last_state][self.last_action] = (1 - self.eta)*q(self.last_state)[self.last_action] + self.eta * (self.last_reward + self.gamma*q(new_state)[np.argmax(q(new_state)) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)])
-
         self.last_state = new_state
         self.last_action = np.argmax(q(self.last_state)) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
+
+        # # SARSA
+        # next_action = np.argmax(q(new_state)) if npr.binomial(1, self.epsilon) == 0 else npr.binomial(1, 0.5)
+        # self.qtable[self.last_state][self.last_action] = (1 - self.eta)*q(self.last_state)[self.last_action] + self.eta * (self.last_reward + self.gamma*q(new_state)[next_action])
+        # self.last_state = new_state
+        # self.last_action = next_action
+
 
         return self.last_action
 
@@ -115,12 +119,12 @@ if __name__ == '__main__':
 	# Empty list to save history.
 	hist = []
 
-	n = 200
+	n = 1000
 	# Run games.
 	run_games(agent, hist, n, 1)
 
 	# Save history.
-	np.save('./scores/q_report_bad',np.array(hist))
+	np.save('./scores/sarsa_new',np.array(hist))
 
 	print('max: ' + str(max(hist)))
 
