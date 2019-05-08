@@ -52,7 +52,7 @@ class Learner(object):
         #     self.epsilon = 0
 #self.gravity,
         new_state = (
-                     self.gravity,
+                     # self.gravity,
 					 state["monkey"]["vel"] // 10,
                      state["tree"]["dist"] // 120,
                      np.mean([state["tree"]["top"] - state["monkey"]["top"], state["tree"]["bot"] - state["monkey"]["bot"]]) // 60)
@@ -115,12 +115,12 @@ if __name__ == '__main__':
 	# Empty list to save history.
 	hist = []
 
-	n = 2000
+	n = 200
 	# Run games.
 	run_games(agent, hist, n, 1)
 
 	# Save history.
-	np.save('q_vtg',np.array(hist))
+	np.save('./scores/q_report_bad',np.array(hist))
 
 	print('max: ' + str(max(hist)))
 

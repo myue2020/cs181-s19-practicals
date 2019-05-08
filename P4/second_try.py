@@ -19,17 +19,19 @@ class Learner(object):
         self.gamma = 0.8
         self.epsilon = 0.05
         self.alpha = 0
-        self.W = npr.uniform(0, 1, 25)
+        self.W = npr.uniform(0, 1, 27)
         self.game_counter = 0
+        self.gravity = 0
 
     def reset(self):
         self.last_state  = None
         self.last_action = None
         self.last_reward = None
         self.epsilon *= 0.999
-        if self.game_counter % 25 == 0:
-            print(self.W)
+        # if self.game_counter % 25 == 0:
+        #     print(self.W)
         self.game_counter += 1
+        self.gravity = None
 
     def action_callback(self, state):
         '''
@@ -42,13 +44,19 @@ class Learner(object):
         # You'll need to select and action and return it.
         # Return 0 to swing and 1 to jump.
 
+        if not self.gravity:
+            self.gravity = -state["monkey"]["vel"]
+            return 0
+
         def function(state, action):
             centered = np.mean([state["tree"]["top"] - state["monkey"]["top"], state["tree"]["bot"] - state["monkey"]["bot"]])
-            temp_state = 1/100000*np.array([state["monkey"]["vel"],
+            temp_state = 1/100000*np.array([
+                                         self.gravity,
+                                         state["monkey"]["vel"],
                                          state["monkey"]["vel"] ** 2,
                                          state["monkey"]["vel"] ** 3,
                                          state["tree"]["dist"],
-                                         state["tree"]["dist"] ** 2, 
+                                         state["tree"]["dist"] ** 2,
                                          state["tree"]["dist"] ** 3,
                                          centered,
                                          centered ** 2,
@@ -107,12 +115,13 @@ if __name__ == '__main__':
 	# Empty list to save history.
 	hist = []
 
+	n = 1000
 	# Run games.
-	run_games(agent, hist, 300, 1)
+	run_games(agent, hist, n, 1)
 
 	# Save history.
-	np.save('hist',np.array(hist))
+	np.save('./scores/cubic_g2',np.array(hist))
 
 	print('max: ' + str(max(hist)))
 
-	print('average: ' + str(np.mean(np.array(hist))))
+	print('average: ' + str(np.mean(np.array(hist)[3*n//4:n])))
